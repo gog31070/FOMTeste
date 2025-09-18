@@ -18,12 +18,15 @@
       border: 3px solid #ff4d6d;
       border-radius: 12px;
       box-shadow: 0 0 18px rgba(0,0,0,.35);
+      display: block;
+      margin: auto; /* mantém centralizado */
     }
   </style>
 </head>
 <body>
 <script>
 let personagemSelecionado = null;
+let isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 /* ================= MENU ================= */
 class Menu extends Phaser.Scene {
@@ -143,13 +146,39 @@ class BaseFase extends Phaser.Scene {
     this.playerFoot.body.setAllowGravity(false);
     this.playerFoot.body.setImmovable(true);
     this.physics.add.overlap(this.playerFoot,this.inimigos,this.playerStomp,null,this);
+
+    // === Botões de toque (apenas mobile) ===
+    if(isMobile){
+      this.touchButtons = {};
+      const btnSize = 120;
+
+      this.touchButtons.left = this.add.rectangle(120, 780, btnSize, btnSize, 0x000000, 0.25).setInteractive();
+      this.touchButtons.right = this.add.rectangle(280, 780, btnSize, btnSize, 0x000000, 0.25).setInteractive();
+      this.touchButtons.jump = this.add.rectangle(1480, 780, btnSize, btnSize, 0x000000, 0.25).setInteractive();
+
+      this.touchState = { left:false, right:false, jump:false };
+
+      this.touchButtons.left.on('pointerdown',()=>this.touchState.left=true);
+      this.touchButtons.left.on('pointerup',()=>this.touchState.left=false);
+      this.touchButtons.left.on('pointerout',()=>this.touchState.left=false);
+
+      this.touchButtons.right.on('pointerdown',()=>this.touchState.right=true);
+      this.touchButtons.right.on('pointerup',()=>this.touchState.right=false);
+      this.touchButtons.right.on('pointerout',()=>this.touchState.right=false);
+
+      this.touchButtons.jump.on('pointerdown',()=>this.touchState.jump=true);
+      this.touchButtons.jump.on('pointerup',()=>this.touchState.jump=false);
+      this.touchButtons.jump.on('pointerout',()=>this.touchState.jump=false);
+    }
   }
 
   update(){
-    const left  = this.cursors.left.isDown || this.keys.left.isDown;
-    const right = this.cursors.right.isDown || this.keys.right.isDown;
-    const jump  = this.cursors.up.isDown || this.keys.up.isDown || this.keys.space.isDown;
     const spriteKey = personagemSelecionado==='gabriel'?'gabrielSprite':'thainaSprite';
+
+    // inputs teclado ou toque
+    const left  = this.cursors.left.isDown || this.keys.left.isDown || (isMobile && this.touchState.left);
+    const right = this.cursors.right.isDown || this.keys.right.isDown || (isMobile && this.touchState.right);
+    const jump  = this.cursors.up.isDown || this.keys.up.isDown || this.keys.space.isDown || (isMobile && this.touchState.jump);
 
     if(left){ this.player.setVelocityX(-200); this.player.anims.play('left_'+spriteKey,true); }
     else if(right){ this.player.setVelocityX(200); this.player.anims.play('right_'+spriteKey,true); }
