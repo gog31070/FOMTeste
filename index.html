@@ -18,15 +18,13 @@
       border: 3px solid #ff4d6d;
       border-radius: 12px;
       box-shadow: 0 0 18px rgba(0,0,0,.35);
-      display: block;
-      margin: auto; /* mantém centralizado */
     }
   </style>
 </head>
 <body>
 <script>
 let personagemSelecionado = null;
-let isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
 /* ================= MENU ================= */
 class Menu extends Phaser.Scene {
@@ -45,6 +43,21 @@ class Menu extends Phaser.Scene {
     const start = this.add.text(800, 520, "▶ Começar", { fontSize:'48px', fill:'#000' })
       .setOrigin(0.5).setInteractive();
     start.on('pointerdown', () => this.scene.start('EscolhaPersonagem'));
+
+    const controls = this.add.text(800, 610, "⚙️ Controles", { fontSize:'40px', fill:'#000' })
+      .setOrigin(0.5).setInteractive();
+    controls.on('pointerdown', () => {
+      const bg = this.add.rectangle(800, 450, 740, 380, 0xffffff, 0.96).setStrokeStyle(4, 0x333333);
+      const t1 = this.add.text(800, 340, "Controles", { fontSize:'48px', fill:'#000' }).setOrigin(0.5);
+      const t2 = this.add.text(
+        800, 450,
+        "← →  ou  A D : Andar\n↑  ou  W  ou  ESPAÇO : Pular\n📱 Toque no mobile: botões na tela",
+        { fontSize:'30px', fill:'#000', align:'center' }
+      ).setOrigin(0.5);
+      const fechar = this.add.text(800, 560, "Fechar", { fontSize:'36px', fill:'#000' })
+        .setOrigin(0.5).setInteractive();
+      fechar.on('pointerdown', () => { bg.destroy(); t1.destroy(); t2.destroy(); fechar.destroy(); });
+    });
   }
 }
 
@@ -52,15 +65,20 @@ class Menu extends Phaser.Scene {
 class EscolhaPersonagem extends Phaser.Scene {
   constructor(){ super({ key:'EscolhaPersonagem' }); }
   preload(){
-    this.load.spritesheet('gabrielSprite', 'imagens/gabrielSprite.png', { frameWidth: 31, frameHeight: 42 });
-    this.load.spritesheet('thainaSprite', 'imagens/thainaSprite.png', { frameWidth: 31, frameHeight: 42 });
+    this.load.image('imgGabriel', 'imagens/gabriel.png');
+    this.load.image('imgThaina',  'imagens/thaina.png');
   }
   create(){
+    this.add.rectangle(800, 450, 1600, 900, 0xcfd8dc);
+
     this.add.text(800, 120, "Escolha seu personagem", { fontSize:'56px', fill:'#000' }).setOrigin(0.5);
 
-    const btnG = this.add.text(600, 460, "👦 Gabriel", { fontSize:'48px', fill:'#000' })
+    this.add.image(600, 360, 'imgGabriel').setScale(1.5);
+    const btnG = this.add.text(600, 560, "👦 Gabriel", { fontSize:'48px', fill:'#000' })
       .setOrigin(0.5).setInteractive();
-    const btnT = this.add.text(1000, 460, "👩 Thainá", { fontSize:'48px', fill:'#000' })
+
+    this.add.image(1000, 360, 'imgThaina').setScale(1.5);
+    const btnT = this.add.text(1000, 560, "👩 Thainá", { fontSize:'48px', fill:'#000' })
       .setOrigin(0.5).setInteractive();
 
     const iniciarCom = (p) => {
@@ -74,151 +92,109 @@ class EscolhaPersonagem extends Phaser.Scene {
 
 /* ================= BASE DAS FASES ================= */
 class BaseFase extends Phaser.Scene {
-  constructor(key, proximaFase, mensagem, plataformasCfg, quadroPos, inimigosCfg=[]){
+  constructor(key, proximaFase, mensagem){
     super({ key });
     this.proximaFase = proximaFase;
     this.mensagem = mensagem;
-    this.plataformasCfg = plataformasCfg;
-    this.quadroPos = quadroPos;
-    this.inimigosCfg = inimigosCfg;
+    this.mobileControls = { left:false, right:false, jump:false };
   }
 
   preload(){
     this.load.image('chao', 'imagens/rpgTile133.png');
-    this.load.image('quadro', 'imagens/quadro.png');
-    this.load.image('enemy1', 'https://labs.phaser.io/assets/sprites/baddie.png');
+    this.load.spritesheet('gabrielSprite','imagens/gabrielSprite.png',{frameWidth:31,frameHeight:42});
+    this.load.spritesheet('thainaSprite', 'imagens/thainaSprite.png', {frameWidth:31,frameHeight:42});
+    this.load.image('quadro','imagens/quadro.png');
   }
 
   create(){
+    this.add.rectangle(800, 450, 1600, 900, 0xcfd8dc);
+
     // chão
     const tileW = this.textures.get('chao').getSourceImage().width;
-    const startX = tileW/2;
-    const tilesNec = Math.ceil(1600/tileW)+1;
-    this.plataformas = this.physics.add.staticGroup();
-    for (let i=0; i<tilesNec; i++){
-      this.plataformas.create(startX + i*tileW, 880, 'chao').refreshBody();
+    const tilesNec = Math.ceil(1600/tileW)+2;
+    const plataformas = this.physics.add.staticGroup();
+    for(let i=0;i<tilesNec;i++){
+      plataformas.create(i*tileW,880,'chao').setOrigin(0,0).refreshBody();
     }
-    this.plataformasCfg.forEach(p => {
-      for (let i=0;i<p.w;i++){
-        this.plataformas.create(p.x+i*tileW, p.y, 'chao').refreshBody();
-      }
-    });
 
     // jogador
-    const spriteKey = personagemSelecionado==='gabriel'?'gabrielSprite':'thainaSprite';
-    this.player = this.physics.add.sprite(100, 720, spriteKey).setScale(2.3);
-    this.player.setCollideWorldBounds(true);
-    this.physics.add.collider(this.player, this.plataformas);
+    const spriteKey = personagemSelecionado==='gabriel' ? 'gabrielSprite':'thainaSprite';
+    this.jogador = this.physics.add.sprite(100,720,spriteKey).setScale(2.3);
+    this.jogador.setCollideWorldBounds(true);
+    this.physics.add.collider(this.jogador, plataformas);
 
     if(!this.anims.exists('left_'+spriteKey)){
-      this.anims.create({ key:'left_'+spriteKey, frames:this.anims.generateFrameNumbers(spriteKey,{start:0,end:3}), frameRate:10, repeat:-1 });
-      this.anims.create({ key:'turn_'+spriteKey, frames:[{ key:spriteKey, frame:4 }], frameRate:20 });
-      this.anims.create({ key:'right_'+spriteKey, frames:this.anims.generateFrameNumbers(spriteKey,{start:5,end:8}), frameRate:10, repeat:-1 });
+      this.anims.create({key:'left_'+spriteKey,frames:this.anims.generateFrameNumbers(spriteKey,{start:0,end:3}),frameRate:10,repeat:-1});
+      this.anims.create({key:'turn_'+spriteKey,frames:[{key:spriteKey,frame:4}],frameRate:20});
+      this.anims.create({key:'right_'+spriteKey,frames:this.anims.generateFrameNumbers(spriteKey,{start:5,end:8}),frameRate:10,repeat:-1});
     }
 
-    this.cursors = this.input.keyboard.createCursorKeys();
-    this.keys = this.input.keyboard.addKeys({
-      up: Phaser.Input.Keyboard.KeyCodes.W,
-      left: Phaser.Input.Keyboard.KeyCodes.A,
-      right: Phaser.Input.Keyboard.KeyCodes.D,
-      space: Phaser.Input.Keyboard.KeyCodes.SPACE
+    this.cursors=this.input.keyboard.createCursorKeys();
+    this.keys=this.input.keyboard.addKeys({
+      up:Phaser.Input.Keyboard.KeyCodes.W,
+      left:Phaser.Input.Keyboard.KeyCodes.A,
+      right:Phaser.Input.Keyboard.KeyCodes.D,
+      space:Phaser.Input.Keyboard.KeyCodes.SPACE,
+      skip:Phaser.Input.Keyboard.KeyCodes.P
     });
 
-    // quadro
-    this.quadro = this.physics.add.staticSprite(this.quadroPos.x, this.quadroPos.y, 'quadro').setScale(0.9);
-    this.physics.add.overlap(this.player, this.quadro, this.coletarQuadro, null, this);
+    this.add.text(16,16,this.mensagem,{fontSize:'28px',fill:'#000'});
 
-    // texto fase
-    this.add.text(16,16,this.mensagem,{ fontSize:'28px', fill:'#000' });
-
-    // inimigos
-    this.inimigos = this.physics.add.group();
-    this.inimigosCfg.forEach(cfg=>{
-      const e = this.inimigos.create(cfg.x, cfg.y, 'enemy1').setScale(2);
-      e.setVelocityX(cfg.dir*100);
-      this.physics.add.collider(e, this.plataformas);
-    });
-    this.physics.add.collider(this.player,this.inimigos,this.playerHit,null,this);
-
-    // stomp
-    this.playerFoot = this.add.rectangle(this.player.x,this.player.y+this.player.displayHeight/2+10,this.player.displayWidth*0.7,16,0x00ff00,0);
-    this.physics.add.existing(this.playerFoot);
-    this.playerFoot.body.setAllowGravity(false);
-    this.playerFoot.body.setImmovable(true);
-    this.physics.add.overlap(this.playerFoot,this.inimigos,this.playerStomp,null,this);
-
-    // === Botões de toque (apenas mobile) ===
+    // Botões mobile
     if(isMobile){
-      this.touchButtons = {};
-      const btnSize = 120;
+      const btnSize=120;
+      this.btnLeft=this.add.rectangle(120,780,btnSize,btnSize,0xffffff,0.3).setInteractive();
+      this.add.text(120,780,"⬅️",{fontSize:"48px",fill:"#000"}).setOrigin(0.5);
 
-      this.touchButtons.left = this.add.rectangle(120, 780, btnSize, btnSize, 0x000000, 0.25).setInteractive();
-      this.touchButtons.right = this.add.rectangle(280, 780, btnSize, btnSize, 0x000000, 0.25).setInteractive();
-      this.touchButtons.jump = this.add.rectangle(1480, 780, btnSize, btnSize, 0x000000, 0.25).setInteractive();
+      this.btnRight=this.add.rectangle(280,780,btnSize,btnSize,0xffffff,0.3).setInteractive();
+      this.add.text(280,780,"➡️",{fontSize:"48px",fill:"#000"}).setOrigin(0.5);
 
-      this.touchState = { left:false, right:false, jump:false };
+      this.btnJump=this.add.rectangle(1480,780,btnSize,btnSize,0xffffff,0.3).setInteractive();
+      this.add.text(1480,780,"⬆️",{fontSize:"48px",fill:"#000"}).setOrigin(0.5);
 
-      this.touchButtons.left.on('pointerdown',()=>this.touchState.left=true);
-      this.touchButtons.left.on('pointerup',()=>this.touchState.left=false);
-      this.touchButtons.left.on('pointerout',()=>this.touchState.left=false);
+      this.btnLeft.on('pointerdown',()=>this.mobileControls.left=true);
+      this.btnLeft.on('pointerup',()=>this.mobileControls.left=false);
+      this.btnLeft.on('pointerout',()=>this.mobileControls.left=false);
 
-      this.touchButtons.right.on('pointerdown',()=>this.touchState.right=true);
-      this.touchButtons.right.on('pointerup',()=>this.touchState.right=false);
-      this.touchButtons.right.on('pointerout',()=>this.touchState.right=false);
+      this.btnRight.on('pointerdown',()=>this.mobileControls.right=true);
+      this.btnRight.on('pointerup',()=>this.mobileControls.right=false);
+      this.btnRight.on('pointerout',()=>this.mobileControls.right=false);
 
-      this.touchButtons.jump.on('pointerdown',()=>this.touchState.jump=true);
-      this.touchButtons.jump.on('pointerup',()=>this.touchState.jump=false);
-      this.touchButtons.jump.on('pointerout',()=>this.touchState.jump=false);
+      this.btnJump.on('pointerdown',()=>this.mobileControls.jump=true);
+      this.btnJump.on('pointerup',()=>this.mobileControls.jump=false);
+      this.btnJump.on('pointerout',()=>this.mobileControls.jump=false);
     }
   }
 
   update(){
-    const spriteKey = personagemSelecionado==='gabriel'?'gabrielSprite':'thainaSprite';
+    const spriteKey = personagemSelecionado==='gabriel' ? 'gabrielSprite':'thainaSprite';
+    const left=this.cursors.left.isDown||this.keys.left.isDown||this.mobileControls.left;
+    const right=this.cursors.right.isDown||this.keys.right.isDown||this.mobileControls.right;
+    const jump=(this.cursors.up.isDown||this.keys.up.isDown||this.keys.space.isDown||this.mobileControls.jump);
 
-    // inputs teclado ou toque
-    const left  = this.cursors.left.isDown || this.keys.left.isDown || (isMobile && this.touchState.left);
-    const right = this.cursors.right.isDown || this.keys.right.isDown || (isMobile && this.touchState.right);
-    const jump  = this.cursors.up.isDown || this.keys.up.isDown || this.keys.space.isDown || (isMobile && this.touchState.jump);
+    if(left){this.jogador.setVelocityX(-200);this.jogador.anims.play('left_'+spriteKey,true);}
+    else if(right){this.jogador.setVelocityX(200);this.jogador.anims.play('right_'+spriteKey,true);}
+    else{this.jogador.setVelocityX(0);this.jogador.anims.play('turn_'+spriteKey);}
 
-    if(left){ this.player.setVelocityX(-200); this.player.anims.play('left_'+spriteKey,true); }
-    else if(right){ this.player.setVelocityX(200); this.player.anims.play('right_'+spriteKey,true); }
-    else { this.player.setVelocityX(0); this.player.anims.play('turn_'+spriteKey); }
-
-    if(jump && this.player.body.blocked.down){ this.player.setVelocityY(-600); }
-
-    this.playerFoot.x=this.player.x;
-    this.playerFoot.y=this.player.y+(this.player.displayHeight/2)+10;
-    this.playerFoot.body.updateFromGameObject();
+    if(jump&&this.jogador.body.blocked.down){this.jogador.setVelocityY(-600);}
   }
-
-  coletarQuadro(){ if(this.proximaFase) this.scene.start(this.proximaFase); else this.scene.start('Menu'); }
-  playerHit(){ this.scene.restart(); }
-  playerStomp(foot,enemy){ if(this.player.body.velocity.y>0&&enemy.active){ enemy.disableBody(true,true); this.player.setVelocityY(-400); } }
 }
 
-/* ===== FASES ===== */
-class Fase0 extends BaseFase {
-  constructor(){ super("Fase0","Fase1","Fase 0 ❤️",[ {x:300,y:760,w:4} ],{x:1180,y:700},[]); }
-}
-class Fase1 extends BaseFase {
-  constructor(){ super("Fase1","Fase2","Fase 1 ❤️",[ {x:500,y:720,w:3} ],{x:1260,y:640},[]); }
-}
-class Fase2 extends BaseFase {
-  constructor(){ super("Fase2",null,"Fase 2 ❤️",[ {x:600,y:720,w:3} ],{x:1400,y:600},[ {x:800,y:700,dir:-1} ]); }
-}
+/* FASES SIMPLES EXEMPLO */
+class Fase0 extends BaseFase{constructor(){super("Fase0","Fase1","Fase 0: O começo ❤️");}}
+class Fase1 extends BaseFase{constructor(){super("Fase1","Fase2","Fase 1: Continuando ❤️");}}
+class Fase2 extends BaseFase{constructor(){super("Fase2","Fase3","Fase 2: Mais difícil ❤️");}}
+class Fase3 extends BaseFase{constructor(){super("Fase3",null,"Fase 3 ❤️");}}
 
 /* CONFIG */
-const config = {
-  type: Phaser.AUTO,
-  width: 1600,
-  height: 900,
+const config={
+  type:Phaser.AUTO,
+  width:isMobile?window.innerWidth:1600,
+  height:isMobile?window.innerHeight:900,
+  scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
   pixelArt:true,
-  physics: { default:'arcade', arcade:{ gravity:{ y:600 }, debug:false } },
-  scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH
-  },
-  scene: [Menu,EscolhaPersonagem,Fase0,Fase1,Fase2]
+  physics:{default:'arcade',arcade:{gravity:{y:600},debug:false}},
+  scene:[Menu,EscolhaPersonagem,Fase0,Fase1,Fase2,Fase3]
 };
 new Phaser.Game(config);
 </script>
