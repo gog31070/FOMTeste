@@ -23,15 +23,13 @@
     /* Botões mobile (HTML) */
     .mobile-controls { position: fixed; left: 20px; bottom: 20px; display: none; gap: 14px; z-index: 10; }
     .mobile-btn {
-      width: 72px; height: 72px; background: rgba(255,255,255,0.8);
+      width: 72px; height: 72px; background: rgba(255,255,255,0.85);
       border: 3px solid #ff4d6d; border-radius: 50%;
       line-height: 72px; text-align: center; font-size: 28px; user-select: none;
+      color: #111;
     }
     .jump-btn { position: fixed; right: 20px; bottom: 20px; width: 92px; height: 92px; line-height: 92px; font-size: 30px; z-index: 10; display: none; }
-    @media (pointer: coarse) {
-      .mobile-controls { display: flex; }
-      .jump-btn { display: block; }
-    }
+    @media (pointer: coarse) { .mobile-controls { display: flex; } .jump-btn { display: block; } }
   </style>
 </head>
 <body>
@@ -50,9 +48,20 @@ const mobile = { left:false, right:false, jump:false };
 class Menu extends Phaser.Scene {
   constructor(){ super({ key:'Menu' }); }
   preload(){
-    this.load.image('fundo_menu', 'imagens/fundo_menu.png');
-    this.load.image('fundo_escolha', 'imagens/fundo_escolha.png');
+    // chão, sprites, fundos, quadros e inimigos (para todo o jogo)
+    this.load.image('chao', 'imagens/rpgTile133.png');
+
+    this.load.spritesheet('gabrielSprite', 'imagens/gabrielSprite.png', { frameWidth: 31, frameHeight: 42 });
+    this.load.spritesheet('thainaSprite',  'imagens/thainaSprite.png',  { frameWidth: 31, frameHeight: 42 });
+
     this.load.image('fundoDefault', 'imagens/fundoDefault.png');
+    for (let i=0; i<=13; i++) this.load.image('fundo'+i, 'imagens/fundo'+i+'.png');
+    this.load.image('fundoFinal', 'imagens/fundoFinal.png');
+
+    for (let i=0; i<=12; i++) this.load.image('quadro'+i, 'imagens/quadro'+i+'.png');
+    this.load.image('quadroFinal', 'imagens/quadroFinal.png');
+
+    this.load.image('enemy1', 'https://labs.phaser.io/assets/sprites/baddie.png');
   }
   create(){
     const bgKey = this.textures.exists('fundo_menu') ? 'fundo_menu'
@@ -73,7 +82,7 @@ class Menu extends Phaser.Scene {
       const t1 = this.add.text(800, 340, "Controles", { fontSize:'48px', fill:'#000' }).setOrigin(0.5);
       const t2 = this.add.text(
         800, 460,
-        "← →  ou  A D : Andar\n↑  ou  W  ou  ESPAÇO : Pular\nP : Pular de fase\n\nMobile: use os botões (← → ⬆)\nMate inimigos caindo na cabeça",
+        "← →  ou  A D : Andar\n↑  ou  W  ou  ESPAÇO : Pular\nP : Pular de fase (dev)\n\n📱 Mobile: botões (← → ⬆)\nMate inimigos caindo na cabeça",
         { fontSize:'28px', fill:'#000', align:'center' }
       ).setOrigin(0.5);
       const fechar = this.add.text(800, 600, "Fechar", { fontSize:'36px', fill:'#000' })
@@ -114,27 +123,24 @@ class EscolhaPersonagem extends Phaser.Scene {
 
 /* ================= BASE DAS FASES ================= */
 class BaseFase extends Phaser.Scene {
-  constructor(key, proximaFase, mensagem, plataformasCfg, quadroPos, inimigosCfg=[], fundoKey=null, final=false){
+  /**
+   * @param {Array<{x:number,y:number,w:number}>} plataformasCfg  barras de tiles
+   * @param {Object} quadroPos {x,y}
+   * @param {Array<{x:number,y:number,dir:number,key?:string}>} inimigosCfg
+   * @param {string|null} fundoKey
+   * @param {string} quadroKey   => 'quadro0'...'quadro12' ou 'quadroFinal'
+   * @param {boolean} finalFase  => se true, mostra mensagem final e volta ao menu
+   */
+  constructor(key, proximaFase, mensagem, plataformasCfg, quadroPos, inimigosCfg=[], fundoKey=null, quadroKey='quadro0', finalFase=false){
     super({ key });
-    this.proximaFase = proximaFase;
-    this.mensagem = mensagem;
-    this.plataformasCfg = plataformasCfg; // [{x,y,w}]
-    this.quadroPos = quadroPos;           // {x,y}
-    this.inimigosCfg = inimigosCfg;       // [{x,y,dir,key?}]
-    this.fundoKey = fundoKey;
-    this.final = final;                   // se true, usa coração e tela final
-  }
-
-  preload(){
-    this.load.image('chao', 'imagens/rpgTile133.png');
-    this.load.spritesheet('gabrielSprite', 'imagens/gabrielSprite.png', { frameWidth: 31, frameHeight: 42 });
-    this.load.spritesheet('thainaSprite',  'imagens/thainaSprite.png',  { frameWidth: 31, frameHeight: 42 });
-    this.load.image('quadro',   'imagens/quadro.png');
-    this.load.image('coracao',  'imagens/coracao.png');
-    this.load.image('fundoDefault', 'imagens/fundoDefault.png');
-    for (let i=0;i<=13;i++) this.load.image('fundo'+i, 'imagens/fundo'+i+'.png');
-    this.load.image('fundoFinal', 'imagens/fundoFinal.png');
-    this.load.image('enemy1', 'https://labs.phaser.io/assets/sprites/baddie.png');
+    this.proximaFase   = proximaFase;
+    this.mensagem      = mensagem;
+    this.plataformasCfg= plataformasCfg;
+    this.quadroPos     = quadroPos;
+    this.inimigosCfg   = inimigosCfg;
+    this.fundoKey      = fundoKey;
+    this.quadroKey     = quadroKey;
+    this.finalFase     = finalFase;
   }
 
   create(){
@@ -179,15 +185,38 @@ class BaseFase extends Phaser.Scene {
       skip: Phaser.Input.Keyboard.KeyCodes.P
     });
 
-    // Quadro / Coração final
-    const qKey = this.final ? 'coracao' : 'quadro';
-    this.quadro = this.physics.add.staticSprite(this.quadroPos.x, this.quadroPos.y, qKey).setScale(0.9);
+    // Quadro (com animação de flutuar em TODAS as fases)
+    const qKey = this.quadroKey || 'quadro0';
+    this.quadro = this.physics.add.staticSprite(this.quadroPos.x, this.quadroPos.y, qKey);
+
+    // Se for o quadro final (coração), redimensiona para ~120x120
+    if (qKey === 'quadroFinal') {
+      const src = this.textures.get(qKey).getSourceImage();
+      const target = 120;
+      const sx = target / src.width;
+      const sy = target / src.height;
+      this.quadro.setScale(sx, sy).refreshBody();
+    } else {
+      // quadros "normais" — tamanho natural, mas pode ajustar aqui se quiser
+      this.quadro.setScale(1).refreshBody();
+    }
+
+    // ANIMAÇÃO de sobe-desce (todas as fases)
+    this.tweens.add({
+      targets: this.quadro,
+      y: this.quadro.y - 15,
+      duration: 1500,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
+
     this.physics.add.overlap(this.player, this.quadro, this.coletarQuadro, null, this);
 
     // Texto da fase
     this.add.text(16,16,this.mensagem,{ fontSize:'28px', fill:'#000' });
 
-    // Inimigos
+    // Inimigos básicos (andam para um lado)
     this.inimigos = this.physics.add.group();
     this.inimigosCfg.forEach(cfg=>{
       const e = this.inimigos.create(cfg.x, cfg.y, cfg.key||'enemy1').setScale(2);
@@ -196,20 +225,20 @@ class BaseFase extends Phaser.Scene {
     });
     this.physics.add.collider(this.player, this.inimigos, this.playerHit, null, this);
 
-    // Stomp sensor visível (vermelho translúcido)
+    // Stomp sensor (invisível)
     this.playerFoot = this.add.rectangle(
-  this.player.x, 
-  this.player.y + this.player.displayHeight/2 + 10,
-  this.player.displayWidth*0.7, 
-  16, 
-  0xff0000, 0 // invisível
-);
+      this.player.x,
+      this.player.y + this.player.displayHeight/2 + 10,
+      this.player.displayWidth * 0.7,
+      16,
+      0xff0000, 0
+    );
     this.physics.add.existing(this.playerFoot);
     this.playerFoot.body.setAllowGravity(false);
     this.playerFoot.body.setImmovable(true);
     this.physics.add.overlap(this.playerFoot, this.inimigos, this.playerStomp, null, this);
 
-    // Mobile buttons (JS eventos -> flags)
+    // Mobile buttons
     const hold = (el, on, off) => {
       el.addEventListener('touchstart', e=>{ e.preventDefault(); on(); }, {passive:false});
       el.addEventListener('touchend',   e=>{ e.preventDefault(); off();}, {passive:false});
@@ -225,7 +254,7 @@ class BaseFase extends Phaser.Scene {
 
   update(){
     const left  = this.cursors.left.isDown || this.keys.left.isDown || mobile.left;
-    const right = this.cursors.right.isDown || this.keys.right.isDown || mobile.right;
+    const right = this.cursors.right.isDown|| this.keys.right.isDown|| mobile.right;
     const jump  = this.cursors.up.isDown   || this.keys.up.isDown   || this.keys.space.isDown || mobile.jump;
     const spriteKey = (personagemSelecionado==='gabriel')?'gabrielSprite':'thainaSprite';
 
@@ -248,10 +277,10 @@ class BaseFase extends Phaser.Scene {
   }
 
   coletarQuadro(){
-    if (this.final){
+    if (this.finalFase){
       // Tela final + volta em 15s
       this.physics.pause();
-      this.add.rectangle(800,450,840,320,0xffffff,0.9).setStrokeStyle(4,0x000000);
+      this.add.rectangle(800,450,880,360,0xffffff,0.93).setStrokeStyle(4,0x000000);
       this.add.text(800,450,"Parabéns, você finalizou!\nTe amo ❤️",{fontSize:'48px',fill:'#000',align:'center'}).setOrigin(0.5);
       this.time.delayedCall(15000, () => this.scene.start('Menu'));
     } else {
@@ -259,6 +288,7 @@ class BaseFase extends Phaser.Scene {
       else this.scene.start('Menu');
     }
   }
+
   playerHit(){ this.scene.restart(); }
   playerStomp(foot, enemy){
     if (this.player.body.velocity.y > 0 && enemy.active){
@@ -269,63 +299,63 @@ class BaseFase extends Phaser.Scene {
 }
 
 /* ================= FASES (0–13) ================= */
-/* Lembrete: adicione/edite quantas plataformas quiser no array de cada fase ({x,y,w}) */
+/* Edite as barras de cada fase livremente: {x, y, w} */
 
 class Fase0  extends BaseFase { constructor(){ super("Fase0","Fase1","Fase 0 ❤️",
   [ {x:320,y:760,w:4},{x:720,y:660,w:3},{x:1120,y:560,w:2} ],
-  {x:1180,y:500}, [], "fundo0"); } }
+  {x:1180,y:500}, [], "fundo0", "quadro0"); } }
 
 class Fase1  extends BaseFase { constructor(){ super("Fase1","Fase2","Fase 1 ❤️",
   [ {x:420,y:720,w:4},{x:820,y:600,w:3},{x:1200,y:500,w:2} ],
-  {x:1260,y:440}, [], "fundo1"); } }
+  {x:1260,y:440}, [], "fundo1", "quadro1"); } }
 
 class Fase2  extends BaseFase { constructor(){ super("Fase2","Fase3","Fase 2 ❤️",
   [ {x:320,y:720,w:3},{x:640,y:600,w:3},{x:960,y:480,w:3},{x:1280,y:380,w:2} ],
-  {x:1330,y:320}, [], "fundo2"); } }
+  {x:1330,y:320}, [], "fundo2", "quadro2"); } }
 
 class Fase3  extends BaseFase { constructor(){ super("Fase3","Fase4","Fase 3 ❤️",
   [ {x:300,y:720,w:3},{x:580,y:600,w:2},{x:820,y:520,w:2},{x:1080,y:420,w:2},{x:1320,y:520,w:2} ],
-  {x:1360,y:460}, [ {x:840,y:500, dir:-1} ], "fundo3"); } }
+  {x:1360,y:460}, [ {x:840,y:500, dir:-1} ], "fundo3", "quadro3"); } }
 
 class Fase4  extends BaseFase { constructor(){ super("Fase4","Fase5","Fase 4 ❤️",
   [ {x:500,y:740,w:3},{x:760,y:640,w:3},{x:980,y:520,w:2},{x:1240,y:420,w:2} ],
-  {x:1280,y:360}, [ {x:780,y:620, dir:-1} ], "fundo4"); } }
+  {x:1280,y:360}, [ {x:780,y:620, dir:-1} ], "fundo4", "quadro4"); } }
 
 class Fase5  extends BaseFase { constructor(){ super("Fase5","Fase6","Fase 5 ❤️",
   [ {x:350,y:720,w:4},{x:780,y:560,w:3},{x:1120,y:420,w:2},{x:1360,y:520,w:2} ],
-  {x:1400,y:460}, [ {x:800,y:540, dir:-1} ], "fundo5"); } }
+  {x:1400,y:460}, [ {x:800,y:540, dir:-1} ], "fundo5", "quadro5"); } }
 
 class Fase6  extends BaseFase { constructor(){ super("Fase6","Fase7","Fase 6 ❤️",
   [ {x:320,y:720,w:3},{x:640,y:600,w:3},{x:980,y:520,w:2},{x:1240,y:400,w:2},{x:1460,y:520,w:2} ],
-  {x:1500,y:460}, [ {x:660,y:580, dir:-1} ], "fundo6"); } }
+  {x:1500,y:460}, [ {x:660,y:580, dir:-1} ], "fundo6", "quadro6"); } }
 
 class Fase7  extends BaseFase { constructor(){ super("Fase7","Fase8","Fase 7 ❤️",
   [ {x:280,y:740,w:3},{x:560,y:640,w:3},{x:840,y:520,w:3},{x:1120,y:420,w:2},{x:1360,y:520,w:2} ],
-  {x:1400,y:460}, [ {x:860,y:500, dir:-1} ], "fundo7"); } }
+  {x:1400,y:460}, [ {x:860,y:500, dir:-1} ], "fundo7", "quadro7"); } }
 
 class Fase8  extends BaseFase { constructor(){ super("Fase8","Fase9","Fase 8 ❤️",
   [ {x:520,y:740,w:3},{x:820,y:620,w:3},{x:1120,y:520,w:2},{x:1360,y:420,w:2} ],
-  {x:1400,y:360}, [ {x:840,y:600, dir:-1} ], "fundo8"); } }
+  {x:1400,y:360}, [ {x:840,y:600, dir:-1} ], "fundo8", "quadro8"); } }
 
 class Fase9  extends BaseFase { constructor(){ super("Fase9","Fase10","Fase 9 ❤️",
   [ {x:320,y:720,w:3},{x:640,y:620,w:2},{x:900,y:520,w:2},{x:1160,y:420,w:2},{x:1380,y:320,w:2} ],
-  {x:1420,y:260}, [ {x:660,y:600, dir:-1},{x:920,y:500, dir:1} ], "fundo9"); } }
+  {x:1420,y:260}, [ {x:660,y:600, dir:-1},{x:920,y:500, dir:1} ], "fundo9", "quadro9"); } }
 
 class Fase10 extends BaseFase { constructor(){ super("Fase10","Fase11","Fase 10 ❤️",
   [ {x:420,y:740,w:4},{x:880,y:600,w:3},{x:1180,y:500,w:2},{x:1380,y:380,w:2} ],
-  {x:1420,y:320}, [ {x:900,y:580, dir:-1},{x:1200,y:480, dir:1} ], "fundo10"); } }
+  {x:1420,y:320}, [ {x:900,y:580, dir:-1},{x:1200,y:480, dir:1} ], "fundo10", "quadro10"); } }
 
 class Fase11 extends BaseFase { constructor(){ super("Fase11","Fase12","Fase 11 ❤️",
   [ {x:300,y:720,w:3},{x:620,y:600,w:2},{x:900,y:520,w:2},{x:1160,y:440,w:2},{x:1400,y:360,w:2} ],
-  {x:1440,y:300}, [ {x:640,y:580, dir:-1},{x:920,y:500, dir:1} ], "fundo11"); } }
+  {x:1440,y:300}, [ {x:640,y:580, dir:-1},{x:920,y:500, dir:1} ], "fundo11", "quadro11"); } }
 
 class Fase12 extends BaseFase { constructor(){ super("Fase12","Fase13","Fase 12 ❤️",
   [ {x:360,y:720,w:3},{x:660,y:600,w:3},{x:960,y:480,w:3}, {x:520,y:760,w:3},{x:820,y:640,w:3},{x:1120,y:520,w:2} ],
-  {x:1180,y:460}, [ {x:680,y:580, dir:-1},{x:980,y:460, dir:1} ], "fundo12"); } }
+  {x:1180,y:460}, [ {x:680,y:580, dir:-1},{x:980,y:460, dir:1} ], "fundo12", "quadro12"); } }
 
 class Fase13 extends BaseFase { constructor(){ super("Fase13", null, "Fase 13 ❤️",
-  [ /* final clean: sem plataformas extras */ ],
-  {x:800,y:700}, [], "fundoFinal", true); } }
+  [ /* final clean */ ],
+  {x:800,y:700}, [], "fundoFinal", "quadroFinal", true); } }
 
 /* ================= CONFIG ================= */
 const config = {
