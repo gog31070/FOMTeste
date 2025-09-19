@@ -6,23 +6,18 @@
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.js"></script>
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      background: #ffb6c1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      margin: 0; padding: 0; background: #ffb6c1;
+      display: flex; justify-content: center; align-items: center; height: 100vh;
       touch-action: manipulation;
     }
     canvas {
-      border: 3px solid #ff4d6d;
-      border-radius: 12px;
+      border: 3px solid #ff4d6d; border-radius: 12px;
       box-shadow: 0 0 18px rgba(0,0,0,.35);
     }
+    /* Botões Mobile (HTML, multitouch) */
     .mobile-controls { position: fixed; left: 20px; bottom: 20px; display: none; gap: 14px; z-index: 10; }
     .mobile-btn {
-      width: 72px; height: 72px; background: rgba(255,255,255,0.8);
+      width: 72px; height: 72px; background: rgba(255,255,255,0.85);
       border: 3px solid #ff4d6d; border-radius: 50%;
       line-height: 72px; text-align: center; font-size: 28px; user-select: none;
     }
@@ -34,6 +29,7 @@
   </style>
 </head>
 <body>
+  <!-- Controles Mobile -->
   <div class="mobile-controls">
     <div id="btnLeft" class="mobile-btn">←</div>
     <div id="btnRight" class="mobile-btn">→</div>
@@ -48,35 +44,51 @@ const mobile = { left:false, right:false, jump:false };
 class Menu extends Phaser.Scene {
   constructor(){ super({ key:'Menu' }); }
   preload(){
+    // fundos e sprites base
+    this.load.image('fundo_menu', 'imagens/fundo_menu.png');
+    this.load.image('fundoDefault', 'imagens/fundoDefault.png');
+
+    // escolha + fases vão usar esses também, já deixo pré-carregado
     this.load.image('chao', 'imagens/rpgTile133.png');
-    this.load.spritesheet('gabrielSprite','imagens/gabrielSprite.png',{frameWidth:31,frameHeight:42});
-    this.load.spritesheet('thainaSprite','imagens/thainaSprite.png',{frameWidth:31,frameHeight:42});
-    this.load.image('fundoDefault','imagens/fundoDefault.png');
-    for (let i=0;i<=13;i++) this.load.image('fundo'+i,'imagens/fundo'+i+'.png');
+    this.load.spritesheet('gabrielSprite', 'imagens/gabrielSprite.png', { frameWidth: 31, frameHeight: 42 });
+    this.load.spritesheet('thainaSprite',  'imagens/thainaSprite.png',  { frameWidth: 31, frameHeight: 42 });
+    this.load.image('imgGabriel', 'imagens/gabriel.png');
+    this.load.image('imgThaina',  'imagens/thaina.png');
+    // fundos/quadro por fase
+    for (let i=0;i<=13;i++) {
+      this.load.image('fundo'+i,  'imagens/fundo'+i+'.png');
+      if(i<=12) this.load.image('quadro'+i, 'imagens/quadro'+i+'.png');
+    }
     this.load.image('fundoFinal','imagens/fundoFinal.png');
-    for (let i=0;i<=12;i++) this.load.image('quadro'+i,'imagens/quadro'+i+'.png');
     this.load.image('quadroFinal','imagens/quadroFinal.png');
-    this.load.image('enemy1','https://labs.phaser.io/assets/sprites/baddie.png');
+
+    // inimigos placeholder
+    this.load.image('enemy1', 'https://labs.phaser.io/assets/sprites/baddie.png');
   }
   create(){
-    const bgKey = this.textures.exists('fundoDefault')?'fundoDefault':null;
-    if(bgKey) this.add.image(800,450,bgKey).setDisplaySize(1600,900);
+    // fundo do menu com fallback
+    const bgKey = this.textures.exists('fundo_menu') ? 'fundo_menu' : 'fundoDefault';
+    this.add.image(800, 450, bgKey).setDisplaySize(1600,900);
 
-    this.add.text(800,220,"First of Many ❤️",{fontSize:'64px',fill:'#000'}).setOrigin(0.5);
-    const start = this.add.text(800,520,"▶ Começar",{fontSize:'48px',fill:'#000'})
-      .setOrigin(0.5).setInteractive();
-    start.on('pointerdown',()=>this.scene.start('EscolhaPersonagem'));
+    this.add.text(800, 220, "First of Many ❤️", { fontSize:'64px', fill:'#000' }).setOrigin(0.5);
 
-    const controls = this.add.text(800,610,"⚙️ Controles",{fontSize:'40px',fill:'#000'})
+    const start = this.add.text(800, 520, "▶ Começar", { fontSize:'48px', fill:'#000' })
       .setOrigin(0.5).setInteractive();
-    controls.on('pointerdown',()=>{
-      const bg=this.add.rectangle(800,450,760,420,0xffffff,0.96).setStrokeStyle(4,0x333333);
-      const t1=this.add.text(800,340,"Controles",{fontSize:'48px',fill:'#000'}).setOrigin(0.5);
-      const t2=this.add.text(800,460,
-        "← → ou A D : Andar\n↑ ou W ou ESPAÇO : Pular\nP : Pular de fase\n\nMobile: botões ← → ⬆",
-        {fontSize:'28px',fill:'#000',align:'center'}).setOrigin(0.5);
-      const fechar=this.add.text(800,600,"Fechar",{fontSize:'36px',fill:'#000'}).setOrigin(0.5).setInteractive();
-      fechar.on('pointerdown',()=>{bg.destroy();t1.destroy();t2.destroy();fechar.destroy();});
+    start.on('pointerdown', () => this.scene.start('EscolhaPersonagem'));
+
+    const controls = this.add.text(800, 610, "⚙️ Controles", { fontSize:'40px', fill:'#000' })
+      .setOrigin(0.5).setInteractive();
+    controls.on('pointerdown', () => {
+      const bg = this.add.rectangle(800, 450, 760, 420, 0xffffff, 0.96).setStrokeStyle(4, 0x333333);
+      const t1 = this.add.text(800, 340, "Controles", { fontSize:'48px', fill:'#000' }).setOrigin(0.5);
+      const t2 = this.add.text(
+        800, 460,
+        "← →  ou  A D : Andar\n↑  ou  W  ou  ESPAÇO : Pular\nP : Pular de fase (dev)\n\nMobile: botões (← → ⬆)\nMate inimigos caindo na cabeça",
+        { fontSize:'28px', fill:'#000', align:'center' }
+      ).setOrigin(0.5);
+      const fechar = this.add.text(800, 600, "Fechar", { fontSize:'36px', fill:'#000' })
+        .setOrigin(0.5).setInteractive();
+      fechar.on('pointerdown', () => { bg.destroy(); t1.destroy(); t2.destroy(); fechar.destroy(); });
     });
   }
 }
@@ -84,160 +96,312 @@ class Menu extends Phaser.Scene {
 /* ========== ESCOLHA PERSONAGEM ========== */
 class EscolhaPersonagem extends Phaser.Scene {
   constructor(){ super({ key:'EscolhaPersonagem' }); }
-  preload(){
-    this.load.image('imgGabriel','imagens/gabriel.png');
-    this.load.image('imgThaina','imagens/thaina.png');
-  }
   create(){
-    const bgKey = this.textures.exists('fundoDefault')?'fundoDefault':null;
-    if(bgKey) this.add.image(800,450,bgKey).setDisplaySize(1600,900);
+    const bgKey = this.textures.exists('fundo_menu') ? 'fundo_menu' : 'fundoDefault';
+    this.add.image(800, 450, bgKey).setDisplaySize(1600,900);
 
-    this.add.text(800,120,"Escolha seu personagem",{fontSize:'56px',fill:'#000'}).setOrigin(0.5);
-    this.add.image(600,360,'imgGabriel').setScale(1.5);
-    const btnG=this.add.text(600,560,"Gabriel",{fontSize:'48px',fill:'#000'}).setOrigin(0.5).setInteractive();
-    this.add.image(1000,360,'imgThaina').setScale(1.5);
-    const btnT=this.add.text(1000,560,"Thainá",{fontSize:'48px',fill:'#000'}).setOrigin(0.5).setInteractive();
-    const iniciarCom=(p)=>{personagemSelecionado=p;this.scene.start('Fase0');};
-    btnG.on('pointerdown',()=>iniciarCom('gabriel'));
-    btnT.on('pointerdown',()=>iniciarCom('thaina'));
+    this.add.text(800, 120, "Escolha seu personagem", { fontSize:'56px', fill:'#000' }).setOrigin(0.5);
+
+    this.add.image(600, 360, 'imgGabriel').setScale(1.5);
+    const btnG = this.add.text(600, 560, "Gabriel", { fontSize:'48px', fill:'#000' })
+      .setOrigin(0.5).setInteractive();
+
+    this.add.image(1000, 360, 'imgThaina').setScale(1.5);
+    const btnT = this.add.text(1000, 560, "Thainá", { fontSize:'48px', fill:'#000' })
+      .setOrigin(0.5).setInteractive();
+
+    const iniciarCom = (p) => { personagemSelecionado = p; this.scene.start('Fase0'); };
+    btnG.on('pointerdown', () => iniciarCom('gabriel'));
+    btnT.on('pointerdown', () => iniciarCom('thaina'));
   }
 }
 
 /* ================= BASE DAS FASES ================= */
 class BaseFase extends Phaser.Scene {
-  constructor(key,proximaFase,mensagem,plataformasCfg,quadroPos,inimigosCfg=[],fundoKey=null,quadroKey=null,final=false){
-    super({key});
-    this.proximaFase=proximaFase;
-    this.mensagem=mensagem;
-    this.plataformasCfg=plataformasCfg;
-    this.quadroPos=quadroPos;
-    this.inimigosCfg=inimigosCfg;
-    this.fundoKey=fundoKey;
-    this.quadroKey=quadroKey;
-    this.final=final;
+  constructor(key, proximaFase, mensagem, plataformasCfg, quadroPos, inimigosCfg=[], fundoKey, quadroKey, final=false){
+    super({ key });
+    this.proximaFase = proximaFase;
+    this.mensagem = mensagem;
+    this.plataformasCfg = plataformasCfg; // [{x,y,w}]
+    this.quadroPos = quadroPos;           // {x,y}
+    this.inimigosCfg = inimigosCfg;       // [{x,y,dir,key?, xMin?, xMax?, speed?}]
+    this.fundoKey = fundoKey;             // 'fundoX'
+    this.quadroKey = quadroKey;           // 'quadroX' ou 'quadroFinal'
+    this.final = final;                   // última fase
+    this.mobileHoldersSet = false;
   }
-  create(){
-    const bgKey=this.fundoKey&&this.textures.exists(this.fundoKey)?this.fundoKey:'fundoDefault';
-    this.add.image(800,450,bgKey).setDisplaySize(1600,900);
 
-    const tileW=this.textures.get('chao').getSourceImage().width;
-    const startX=tileW/2;
-    const tilesNec=Math.ceil(1600/tileW)+1;
-    this.plataformas=this.physics.add.staticGroup();
-    for(let i=0;i<tilesNec;i++){this.plataformas.create(startX+i*tileW,880,'chao').refreshBody();}
+  create(){
+    /* Fundo com fallback */
+    const bgKey = this.textures.exists(this.fundoKey) ? this.fundoKey
+                 : (this.textures.exists('fundoDefault') ? 'fundoDefault' : null);
+    if (bgKey) this.add.image(800, 450, bgKey).setDisplaySize(1600,900);
+    else this.add.rectangle(800,450,1600,900,0xcfd8dc);
+
+    /* Plataformas: chão + extras (tiles) */
+    const tileW = this.textures.get('chao').getSourceImage().width;
+    this.plataformas = this.physics.add.staticGroup();
+    for (let i=0;i<Math.ceil(1600/tileW)+1;i++){
+      this.plataformas.create(tileW/2 + i*tileW, 880, 'chao').refreshBody();
+    }
     this.plataformasCfg.forEach(p=>{
-      for(let i=0;i<p.w;i++){this.plataformas.create(p.x+i*tileW,p.y,'chao').refreshBody();}
+      for (let i=0;i<p.w;i++){
+        this.plataformas.create(p.x + i*tileW, p.y, 'chao').refreshBody();
+      }
     });
 
-    const spriteKey=(personagemSelecionado==='gabriel')?'gabrielSprite':'thainaSprite';
-    this.player=this.physics.add.sprite(100,720,spriteKey).setScale(2.3);
+    /* Jogador */
+    const spriteKey = (personagemSelecionado==='gabriel')?'gabrielSprite':'thainaSprite';
+    this.player = this.physics.add.sprite(100, 720, spriteKey).setScale(2.3);
     this.player.setCollideWorldBounds(true);
-    this.physics.add.collider(this.player,this.plataformas);
+    this.physics.add.collider(this.player, this.plataformas);
 
-    if(!this.anims.exists('left_'+spriteKey)){
-      this.anims.create({key:'left_'+spriteKey,frames:this.anims.generateFrameNumbers(spriteKey,{start:0,end:3}),frameRate:10,repeat:-1});
-      this.anims.create({key:'turn_'+spriteKey,frames:[{key:spriteKey,frame:4}],frameRate:20});
-      this.anims.create({key:'right_'+spriteKey,frames:this.anims.generateFrameNumbers(spriteKey,{start:5,end:8}),frameRate:10,repeat:-1});
+    if (!this.anims.exists('left_'+spriteKey)){
+      this.anims.create({ key:'left_'+spriteKey,  frames:this.anims.generateFrameNumbers(spriteKey,{start:0,end:3}), frameRate:10, repeat:-1 });
+      this.anims.create({ key:'turn_'+spriteKey,  frames:[{ key:spriteKey, frame:4 }], frameRate:20 });
+      this.anims.create({ key:'right_'+spriteKey, frames:this.anims.generateFrameNumbers(spriteKey,{start:5,end:8}), frameRate:10, repeat:-1 });
     }
 
-    this.cursors=this.input.keyboard.createCursorKeys();
-    this.keys=this.input.keyboard.addKeys({
-      up:Phaser.Input.Keyboard.KeyCodes.W,
-      left:Phaser.Input.Keyboard.KeyCodes.A,
-      right:Phaser.Input.Keyboard.KeyCodes.D,
-      space:Phaser.Input.Keyboard.KeyCodes.SPACE,
-      skip:Phaser.Input.Keyboard.KeyCodes.P
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.keys = this.input.keyboard.addKeys({
+      up: Phaser.Input.Keyboard.KeyCodes.W,
+      left: Phaser.Input.Keyboard.KeyCodes.A,
+      right: Phaser.Input.Keyboard.KeyCodes.D,
+      space: Phaser.Input.Keyboard.KeyCodes.SPACE,
+      skip: Phaser.Input.Keyboard.KeyCodes.P
     });
 
-    // quadro animado
-    const qKey=this.quadroKey||'quadro0';
-    this.quadro=this.physics.add.staticSprite(this.quadroPos.x,this.quadroPos.y,qKey).setScale(0.9);
-    this.tweens.add({targets:this.quadro,y:this.quadro.y-12,yoyo:true,repeat:-1,duration:1000,ease:'Sine.easeInOut'});
-    this.physics.add.overlap(this.player,this.quadro,this.coletarQuadro,null,this);
+    /* Quadro flutuando (hitbox = tamanho da imagem exibida) */
+    this.quadro = this.physics.add.staticSprite(this.quadroPos.x, this.quadroPos.y, this.quadroKey).setScale(1);
+    this.tweens.add({ targets:this.quadro, y:this.quadro.y-15, duration:1200, yoyo:true, repeat:-1, ease:'Sine.easeInOut' });
+    this.physics.add.overlap(this.player, this.quadro, this.coletarQuadro, null, this);
 
-    this.add.text(16,16,this.mensagem,{fontSize:'28px',fill:'#000'});
+    this.add.text(16,16,this.mensagem,{ fontSize:'28px', fill:'#000' });
 
-    this.inimigos=this.physics.add.group();
+    /* Inimigos com antiqueda (edge probe + limites opcionais) */
+    this.inimigos = this.physics.add.group();
     this.inimigosCfg.forEach(cfg=>{
-      const e=this.inimigos.create(cfg.x,cfg.y,cfg.key||'enemy1').setScale(2);
-      e.setVelocityX((cfg.dir||-1)*100);
+      const e = this.inimigos.create(cfg.x, cfg.y, cfg.key||'enemy1').setScale(2);
+      const dir = (cfg.dir || -1);
+      const speed = Math.abs(cfg.speed||100);
+      e.setVelocityX(dir*speed);
       e.setCollideWorldBounds(true);
-      e.setBounceX(1);
-      this.physics.add.collider(e,this.plataformas);
-    });
-    this.physics.add.collider(this.player,this.inimigos,this.playerHit,null,this);
+      this.physics.add.collider(e, this.plataformas);
 
-    this.playerFoot=this.add.rectangle(this.player.x,this.player.y+this.player.displayHeight/2+10,this.player.displayWidth*0.7,16,0xff0000,0);
+      // limites de patrulha
+      e.patrol = { xMin: cfg.xMin ?? null, xMax: cfg.xMax ?? null, speed: speed };
+
+      // sensor à frente (invisível)
+      const aheadX = e.x + dir * (e.displayWidth/2 + 6);
+      const aheadY = e.y + e.displayHeight/2 + 2;
+      e.edgeProbe = this.add.rectangle(aheadX, aheadY, 4, 4, 0x00ff00, 0);
+      this.physics.add.existing(e.edgeProbe);
+      e.edgeProbe.body.setAllowGravity(false);
+      e.edgeProbe.body.setImmovable(true);
+    });
+
+    this.physics.add.collider(this.player, this.inimigos, this.playerHit, null, this);
+
+    // Stomp invisível (mata por cima)
+    this.playerFoot = this.add.rectangle(
+      this.player.x, this.player.y + this.player.displayHeight/2 + 10,
+      this.player.displayWidth * 0.7, 16, 0xff0000, 0
+    );
     this.physics.add.existing(this.playerFoot);
     this.playerFoot.body.setAllowGravity(false);
     this.playerFoot.body.setImmovable(true);
-    this.physics.add.overlap(this.playerFoot,this.inimigos,this.playerStomp,null,this);
+    this.physics.add.overlap(this.playerFoot, this.inimigos, this.playerStomp, null, this);
 
-    const hold=(el,on,off)=>{
-      el.addEventListener('touchstart',e=>{e.preventDefault();on();},{passive:false});
-      el.addEventListener('touchend',e=>{e.preventDefault();off();},{passive:false});
-      el.addEventListener('touchcancel',e=>{e.preventDefault();off();},{passive:false});
-      el.addEventListener('mousedown',e=>{e.preventDefault();on();});
-      el.addEventListener('mouseup',e=>{e.preventDefault();off();});
-      el.addEventListener('mouseleave',e=>{e.preventDefault();off();});
-    };
-    hold(document.getElementById('btnLeft'),()=>mobile.left=true,()=>mobile.left=false);
-    hold(document.getElementById('btnRight'),()=>mobile.right=true,()=>mobile.right=false);
-    hold(document.getElementById('btnJump'),()=>mobile.jump=true,()=>mobile.jump=false);
+    /* Mobile (multitouch HTML -> flags) */
+    if (!this.mobileHoldersSet) {
+      const hold=(el,on,off)=>{
+        el.addEventListener('touchstart',e=>{e.preventDefault();on();},{passive:false});
+        el.addEventListener('touchend',e=>{e.preventDefault();off();},{passive:false});
+        el.addEventListener('touchcancel',e=>{e.preventDefault();off();},{passive:false});
+        el.addEventListener('mousedown',e=>{e.preventDefault();on();});
+        el.addEventListener('mouseup',e=>{e.preventDefault();off();});
+        el.addEventListener('mouseleave',e=>{e.preventDefault();off();});
+      };
+      hold(document.getElementById('btnLeft'), ()=>mobile.left=true,  ()=>mobile.left=false);
+      hold(document.getElementById('btnRight'),()=>mobile.right=true, ()=>mobile.right=false);
+      hold(document.getElementById('btnJump'), ()=>mobile.jump=true,  ()=>mobile.jump=false);
+      this.mobileHoldersSet = true;
+    }
   }
+
   update(){
-    const left=this.cursors.left.isDown||this.keys.left.isDown||mobile.left;
-    const right=this.cursors.right.isDown||this.keys.right.isDown||mobile.right;
-    const jump=this.cursors.up.isDown||this.keys.up.isDown||this.keys.space.isDown||mobile.jump;
-    const spriteKey=(personagemSelecionado==='gabriel')?'gabrielSprite':'thainaSprite';
-    if(left){this.player.setVelocityX(-200);this.player.anims.play('left_'+spriteKey,true);}
-    else if(right){this.player.setVelocityX(200);this.player.anims.play('right_'+spriteKey,true);}
-    else{this.player.setVelocityX(0);this.player.anims.play('turn_'+spriteKey);}
-    if(jump&&this.player.body.blocked.down){this.player.setVelocityY(-600);}
-    this.playerFoot.x=this.player.x;
-    this.playerFoot.y=this.player.y+(this.player.displayHeight/2)+10;
+    // Input
+    const left  = this.cursors.left.isDown  || this.keys.left.isDown  || mobile.left;
+    const right = this.cursors.right.isDown || this.keys.right.isDown || mobile.right;
+    const jump  = (this.cursors.up.isDown || this.keys.up.isDown || this.keys.space.isDown || mobile.jump);
+    const spriteKey = (personagemSelecionado==='gabriel')?'gabrielSprite':'thainaSprite';
+
+    if (left){  this.player.setVelocityX(-200); this.player.anims.play('left_'+spriteKey, true); }
+    else if (right){ this.player.setVelocityX(200); this.player.anims.play('right_'+spriteKey, true); }
+    else { this.player.setVelocityX(0); this.player.anims.play('turn_'+spriteKey); }
+
+    if (jump && this.player.body.blocked.down){ this.player.setVelocityY(-600); }
+
+    // atualiza stomp sensor
+    this.playerFoot.x = this.player.x;
+    this.playerFoot.y = this.player.y + (this.player.displayHeight/2) + 10;
     this.playerFoot.body.updateFromGameObject();
-    if(Phaser.Input.Keyboard.JustDown(this.keys.skip)){
-      if(this.proximaFase) this.scene.start(this.proximaFase);
+
+    // Inimigos: antiqueda + limites
+    this.inimigos.children.iterate(e=>{
+      if (!e || !e.body) return;
+      const curVx = e.body.velocity.x || -100;
+      const dir = Math.sign(curVx) || -1;
+      const v = Math.max(60, Math.abs(curVx));
+
+      // reposiciona probe
+      const aheadX = e.x + dir * (e.displayWidth/2 + 6);
+      const aheadY = e.y + e.displayHeight/2 + 2;
+      e.edgeProbe.x = aheadX;
+      e.edgeProbe.y = aheadY;
+      e.edgeProbe.body.updateFromGameObject();
+
+      // há chão à frente?
+      let groundAhead = false;
+      this.physics.overlap(e.edgeProbe, this.plataformas, () => { groundAhead = true; });
+
+      // vira se não houver chão à frente
+      if (!groundAhead) e.setVelocityX(-dir * v);
+
+      // vira se bater na parede
+      if (e.body.blocked.right) e.setVelocityX(-v);
+      if (e.body.blocked.left)  e.setVelocityX( v);
+
+      // limites xMin/xMax, se configurados
+      if (e.patrol) {
+        if (e.patrol.xMin != null && e.x <= e.patrol.xMin) e.setVelocityX( Math.abs(v) );
+        if (e.patrol.xMax != null && e.x >= e.patrol.xMax) e.setVelocityX(-Math.abs(v));
+      }
+    });
+
+    // Pular de fase (dev)
+    if (Phaser.Input.Keyboard.JustDown(this.keys.skip)){
+      if (this.proximaFase) this.scene.start(this.proximaFase);
       else this.scene.start('Menu');
     }
   }
+
   coletarQuadro(){
-    if(this.final){
+    if (this.final){
       this.physics.pause();
       this.add.rectangle(800,450,840,320,0xffffff,0.9).setStrokeStyle(4,0x000000);
       this.add.text(800,450,"Parabéns, você finalizou!\nTe amo ❤️",{fontSize:'48px',fill:'#000',align:'center'}).setOrigin(0.5);
       this.time.delayedCall(15000,()=>this.scene.start('Menu'));
-    }else{
-      if(this.proximaFase) this.scene.start(this.proximaFase);
+    } else {
+      if (this.proximaFase) this.scene.start(this.proximaFase);
       else this.scene.start('Menu');
     }
   }
-  playerHit(){this.scene.restart();}
-  playerStomp(foot,enemy){if(this.player.body.velocity.y>0&&enemy.active){enemy.disableBody(true,true);this.player.setVelocityY(-400);}}
+  playerHit(){ this.scene.restart(); }
+  playerStomp(foot, enemy){
+    if (this.player.body.velocity.y > 0 && enemy.active){
+      enemy.disableBody(true,true);
+      this.player.setVelocityY(-400);
+    }
+  }
 }
 
-/* ================= FASES ================= */
-class Fase0 extends BaseFase{constructor(){super("Fase0","Fase1","Fase 0 ❤️",[ ],{x:800,y:650},[ ],"fundo0","quadro0");}}
-class Fase1 extends BaseFase{constructor(){super("Fase1","Fase2","Fase 1 ❤️",[ {x:420,y:720,w:4},{x:820,y:600,w:3},{x:1200,y:500,w:2} ],{x:1260,y:440},[],"fundo1","quadro1");}}
-class Fase2 extends BaseFase{constructor(){super("Fase2","Fase3","Fase 2 ❤️",[ {x:320,y:720,w:3},{x:640,y:600,w:3},{x:960,y:480,w:3},{x:1280,y:380,w:2} ],{x:1330,y:320},[],"fundo2","quadro2");}}
-class Fase3 extends BaseFase{constructor(){super("Fase3","Fase4","Fase 3 ❤️",[ {x:300,y:720,w:3},{x:580,y:600,w:2},{x:820,y:520,w:2},{x:1080,y:420,w:2},{x:1320,y:520,w:2} ],{x:1360,y:460},[ {x:840,y:500,dir:-1} ],"fundo3","quadro3");}}
-class Fase4 extends BaseFase{constructor(){super("Fase4","Fase5","Fase 4 ❤️",[ {x:500,y:740,w:3},{x:760,y:640,w:3},{x:980,y:520,w:2},{x:1240,y:420,w:2} ],{x:1280,y:360},[ {x:780,y:620,dir:-1} ],"fundo4","quadro4");}}
-class Fase5 extends BaseFase{constructor(){super("Fase5","Fase6","Fase 5 ❤️",[ {x:350,y:720,w:4},{x:780,y:560,w:3},{x:1120,y:420,w:2},{x:1360,y:520,w:2} ],{x:1400,y:460},[ {x:800,y:540,dir:-1} ],"fundo5","quadro5");}}
-class Fase6 extends BaseFase{constructor(){super("Fase6","Fase7","Fase 6 ❤️",[ {x:320,y:720,w:3},{x:640,y:600,w:3},{x:980,y:520,w:2},{x:1240,y:400,w:2},{x:1460,y:520,w:2} ],{x:1500,y:460},[ {x:660,y:580,dir:-1} ],"fundo6","quadro6");}}
-class Fase7 extends BaseFase{constructor(){super("Fase7","Fase8","Fase 7 ❤️",[ {x:280,y:740,w:3},{x:560,y:640,w:3},{x:840,y:520,w:3},{x:1120,y:420,w:2},{x:1360,y:520,w:2} ],{x:1400,y:460},[ {x:860,y:500,dir:-1} ],"fundo7","quadro7");}}
-class Fase8 extends BaseFase{constructor(){super("Fase8","Fase9","Fase 8 ❤️",[ {x:520,y:740,w:3},{x:820,y:620,w:3},{x:1120,y:520,w:2},{x:1360,y:420,w:2} ],{x:1400,y:360},[ {x:840,y:600,dir:-1} ],"fundo8","quadro8");}}
-class Fase9 extends BaseFase{constructor(){super("Fase9","Fase10","Fase 9 ❤️",[ {x:320,y:720,w:3},{x:640,y:620,w:2},{x:900,y:520,w:2},{x:1160,y:420,w:2},{x:1380,y:320,w:2} ],{x:1420,y:260},[ {x:660,y:600,dir:-1},{x:920,y:500,dir:1} ],"fundo9","quadro9");}}
-class Fase10 extends BaseFase{constructor(){super("Fase10","Fase11","Fase 10 ❤️",[ {x:420,y:740,w:4},{x:880,y:600,w:3},{x:1180,y:500,w:2},{x:1380,y:380,w:2} ],{x:1420,y:320},[ {x:900,y:580,dir:-1},{x:1200,y:480,dir:1} ],"fundo10","quadro10");}}
-class Fase11 extends BaseFase{constructor(){super("Fase11","Fase12","Fase 11 ❤️",[ {x:300,y:720,w:3},{x:620,y:600,w:2},{x:900,y:520,w:2},{x:1160,y:440,w:2},{x:1400,y:360,w:2} ],{x:1440,y:300},[ {x:640,y:580,dir:-1},{x:920,y:500,dir:1} ],"fundo11","quadro11");}}
-class Fase12 extends BaseFase{constructor(){super("Fase12","Fase13","Fase 12 ❤️",[ {x:360,y:720,w:3},{x:660,y:600,w:3},{x:960,y:480,w:3},{x:520,y:760,w:3},{x:820,y:640,w:3},{x:1120,y:520,w:2} ],{x:1180,y:460},[ {x:680,y:580,dir:-1},{x:980,y:460,dir:1} ],"fundo12","quadro12");}}
-class Fase13 extends BaseFase{constructor(){super("Fase13",null,"Fase 13 ❤️",[ ],{x:800,y:700},[],"fundoFinal","quadroFinal",true);}}
+/* ================= FASES (0–13) ================= */
+/* Regra: 0–2 sem inimigos | 3–8 com 1 inimigo | 9–12 com 2 inimigos | 13 final sem inimigos */
+
+class Fase0  extends BaseFase { constructor(){ super("Fase0","Fase1","Fase 0 ❤️",
+  [ {x:320,y:760,w:4},{x:720,y:660,w:3},{x:1120,y:560,w:2} ],
+  {x:1180,y:500}, [], "fundo0","quadro0"); } }
+
+class Fase1  extends BaseFase { constructor(){ super("Fase1","Fase2","Fase 1 ❤️",
+  [ {x:420,y:720,w:4},{x:820,y:600,w:3},{x:1200,y:500,w:2} ],
+  {x:1260,y:440}, [], "fundo1","quadro1"); } }
+
+class Fase2  extends BaseFase { constructor(){ super("Fase2","Fase3","Fase 2 ❤️",
+  [ {x:320,y:720,w:3},{x:640,y:600,w:3},{x:960,y:480,w:3},{x:1280,y:380,w:2} ],
+  {x:1330,y:320}, [], "fundo2","quadro2"); } }
+
+class Fase3  extends BaseFase { constructor(){ super("Fase3","Fase4","Fase 3 ❤️",
+  [ {x:300,y:720,w:3},{x:580,y:600,w:2},{x:820,y:520,w:2},{x:1080,y:420,w:2},{x:1320,y:520,w:2} ],
+  {x:1360,y:460}, [ {x:840,y:500, dir:-1, xMin:820, xMax:1080} ], "fundo3","quadro3"); } }
+
+class Fase4  extends BaseFase { constructor(){ super("Fase4","Fase5","Fase 4 ❤️",
+  [ {x:500,y:740,w:3},{x:760,y:640,w:3},{x:980,y:520,w:2},{x:1240,y:420,w:2} ],
+  {x:1280,y:360}, [ {x:780,y:620, dir:-1, xMin:760, xMax:920} ], "fundo4","quadro4"); } }
+
+class Fase5  extends BaseFase { constructor(){ super("Fase5","Fase6","Fase 5 ❤️",
+  [ {x:350,y:720,w:4},{x:780,y:560,w:3},{x:1120,y:420,w:2},{x:1360,y:520,w:2} ],
+  {x:1400,y:460}, [ {x:800,y:540, dir:-1, xMin:780, xMax:940} ], "fundo5","quadro5"); } }
+
+class Fase6  extends BaseFase { constructor(){ super("Fase6","Fase7","Fase 6 ❤️",
+  [ {x:320,y:720,w:3},{x:640,y:600,w:3},{x:980,y:520,w:2},{x:1240,y:400,w:2},{x:1460,y:520,w:2} ],
+  {x:1500,y:460}, [ {x:660,y:580, dir:-1, xMin:640, xMax:800} ], "fundo6","quadro6"); } }
+
+class Fase7  extends BaseFase { constructor(){ super("Fase7","Fase8","Fase 7 ❤️",
+  [ {x:280,y:740,w:3},{x:560,y:640,w:3},{x:840,y:520,w:3},{x:1120,y:420,w:2},{x:1360,y:520,w:2} ],
+  {x:1400,y:460}, [ {x:860,y:500, dir:-1, xMin:840, xMax:1000} ], "fundo7","quadro7"); } }
+
+class Fase8  extends BaseFase { constructor(){ super("Fase8","Fase9","Fase 8 ❤️",
+  [ {x:520,y:740,w:3},{x:820,y:620,w:3},{x:1120,y:520,w:2},{x:1360,y:420,w:2} ],
+  {x:1400,y:360}, [ {x:840,y:600, dir:-1, xMin:820, xMax:980} ], "fundo8","quadro8"); } }
+
+class Fase9  extends BaseFase { constructor(){ super("Fase9","Fase10","Fase 9 ❤️",
+  [ {x:320,y:720,w:3},{x:640,y:620,w:2},{x:900,y:520,w:2},{x:1160,y:420,w:2},{x:1380,y:320,w:2} ],
+  {x:1420,y:260},
+  [
+    {x:660,y:600, dir:-1, xMin:640, xMax:768},
+    {x:920,y:500, dir:1,  xMin:900, xMax:1028}
+  ],
+  "fundo9","quadro9"); } }
+
+class Fase10 extends BaseFase { constructor(){ super("Fase10","Fase11","Fase 10 ❤️",
+  [ {x:420,y:740,w:4},{x:880,y:600,w:3},{x:1180,y:500,w:2},{x:1380,y:380,w:2} ],
+  {x:1420,y:320},
+  [
+    {x:900,y:580, dir:-1, xMin:880, xMax:1040},
+    {x:1200,y:480,dir:1,  xMin:1180,xMax:1308}
+  ],
+  "fundo10","quadro10"); } }
+
+class Fase11 extends BaseFase { constructor(){ super("Fase11","Fase12","Fase 11 ❤️",
+  [ {x:300,y:720,w:3},{x:620,y:600,w:2},{x:900,y:520,w:2},{x:1160,y:440,w:2},{x:1400,y:360,w:2} ],
+  {x:1440,y:300},
+  [
+    {x:640,y:580, dir:-1, xMin:620, xMax:748},
+    {x:920,y:500, dir:1,  xMin:900, xMax:1028}
+  ],
+  "fundo11","quadro11"); } }
+
+class Fase12 extends BaseFase { constructor(){ super("Fase12","Fase13","Fase 12 ❤️",
+  [
+    {x:360,y:720,w:3},{x:660,y:600,w:3},{x:960,y:480,w:3}, // caminho A
+    {x:520,y:760,w:3},{x:820,y:640,w:3},{x:1120,y:520,w:2}  // caminho B
+  ],
+  {x:1180,y:460},
+  [
+    {x:680,y:580, dir:-1, xMin:660, xMax:820},
+    {x:980,y:460, dir:1,  xMin:960, xMax:1088}
+  ],
+  "fundo12","quadro12"); } }
+
+class Fase13 extends BaseFase { constructor(){ super("Fase13", null, "Fase 13 ❤️",
+  [ /* final clean: sem plataformas extras */ ],
+  {x:800,y:700}, [], "fundoFinal","quadroFinal", true); } }
 
 /* ================= CONFIG ================= */
-const config={type:Phaser.AUTO,width:1600,height:900,pixelArt:true,
-  physics:{default:'arcade',arcade:{gravity:{y:600},debug:false}},
-  scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
-  scene:[Menu,EscolhaPersonagem,Fase0,Fase1,Fase2,Fase3,Fase4,Fase5,Fase6,Fase7,Fase8,Fase9,Fase10,Fase11,Fase12,Fase13]};
+const config = {
+  type: Phaser.AUTO,
+  width: 1600,
+  height: 900,
+  pixelArt:true,
+  physics: { default:'arcade', arcade:{ gravity:{ y:600 }, debug:false } },
+  scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+  scene: [
+    Menu, EscolhaPersonagem,
+    Fase0, Fase1, Fase2, Fase3, Fase4, Fase5, Fase6, Fase7, Fase8,
+    Fase9, Fase10, Fase11, Fase12, Fase13
+  ]
+};
 new Phaser.Game(config);
 </script>
 </body>
