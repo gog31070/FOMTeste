@@ -77,7 +77,7 @@ class Menu extends Phaser.Scene {
     controls.on('pointerdown', () => {
       const ui = this._modal(
         "Controles",
-        "← →  ou  A D : Andar\n↑  ou  W  ou  ESPAÇO : Pular\nP : Pular de fase (dev)\n\nMobile: botões (← → ⬆)\nMate inimigos caindo na cabeça"
+        "← →  ou  A D : Andar\n↑  ou  W  ou  ESPAÇO : Pular\n\nMobile: botões (← → ⬆)\nMate inimigos caindo na cabeça"
       );
       ui.close.on('pointerdown', ui.destroy);
     });
@@ -426,3 +426,4 @@ new Phaser.Game(config);
 </script>
 </body>
 </html>
+
