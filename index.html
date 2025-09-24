@@ -6,19 +6,19 @@
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.js"></script>
   <style>
     body {
-      margin: 0; padding: 0; background: #ffb6c1;
+      margin: 0; padding: 0; background: #7375ff;
       display: flex; justify-content: center; align-items: center; height: 100vh;
       touch-action: manipulation;
     }
     canvas {
-      border: 3px solid #ff4d6d; border-radius: 12px;
+      border: 3px solid #0400ff; border-radius: 12px;
       box-shadow: 0 0 18px rgba(0,0,0,.35);
     }
   
     .mobile-controls { position: fixed; left: 20px; bottom: 20px; display: none; gap: 14px; z-index: 10; }
     .mobile-btn {
       width: 72px; height: 72px; background: rgba(255,255,255,0.85);
-      border: 3px solid #ff4d6d; border-radius: 50%;
+      border: 3px solid #0400ff; border-radius: 50%;
       line-height: 72px; text-align: center; font-size: 28px; user-select: none;
     }
     .jump-btn { position: fixed; right: 20px; bottom: 20px; width: 92px; height: 92px; line-height: 92px; font-size: 30px; z-index: 10; display: none; }
@@ -66,13 +66,13 @@ class Menu extends Phaser.Scene {
       this.add.rectangle(800, 450, 1600, 900, 0xcfd8dc);
     }
 
-    this.add.text(800, 220, "First of Many ❤️", { fontSize:'64px', fill:'#000' }).setOrigin(0.5);
+    this.add.text(800, 220, "First of Many ❤️", { fontSize:'64px', fill:'#ffffff' }).setOrigin(0.5);
 
-    const start = this.add.text(800, 520, "▶ Começar", { fontSize:'48px', fill:'#000' })
+    const start = this.add.text(800, 520, "▶ Começar", { fontSize:'48px', fill:'#ffffff' })
       .setOrigin(0.5).setInteractive();
     start.on('pointerdown', () => this.scene.start('EscolhaPersonagem'));
 
-    const controls = this.add.text(800, 610, "⚙️ Controles", { fontSize:'40px', fill:'#000' })
+    const controls = this.add.text(800, 610, "⚙️ Controles", { fontSize:'40px', fill:'#ffffff' })
       .setOrigin(0.5).setInteractive();
     controls.on('pointerdown', () => {
       const ui = this._modal(
@@ -82,7 +82,7 @@ class Menu extends Phaser.Scene {
       ui.close.on('pointerdown', ui.destroy);
     });
 
-    const credits = this.add.text(800, 680, "📜 Créditos", { fontSize:'40px', fill:'#000' })
+    const credits = this.add.text(800, 680, "📜 Créditos", { fontSize:'40px', fill:'#ffffff' })
       .setOrigin(0.5).setInteractive();
     credits.on('pointerdown', () => {
       const ui = this._modal(
@@ -132,12 +132,12 @@ class EscolhaPersonagem extends Phaser.Scene {
     const bgKey = this.textures.exists('fundo_menu') ? 'fundo_menu' : 'fundoDefault';
     this.add.image(800, 450, bgKey).setDisplaySize(1600,900);
 
-    this.add.text(800, 120, "Escolha seu personagem", { fontSize:'56px', fill:'#000' }).setOrigin(0.5);
-    this.add.image(600, 360, 'imgGabriel').setScale(1.5);
-    const btnG = this.add.text(600, 560, "Gabriel", { fontSize:'48px', fill:'#000' })
+    this.add.text(800, 120, "Escolha seu personagem", { fontSize:'56px', fill:'#ffffff' }).setOrigin(0.5);
+    this.add.image(1000, 360, 'imgGabriel').setScale(1.5);
+    const btnG = this.add.text(1000, 560, "Gabriel", { fontSize:'48px', fill:'#ffffff' })
       .setOrigin(0.5).setInteractive();
-    this.add.image(1000, 360, 'imgThaina').setScale(1.5);
-    const btnT = this.add.text(1000, 560, "Thainá", { fontSize:'48px', fill:'#000' })
+    this.add.image(600, 360, 'imgThaina').setScale(1.5);
+    const btnT = this.add.text(600, 560, "Thainá", { fontSize:'48px', fill:'#ffffff' })
       .setOrigin(0.5).setInteractive();
 
     const iniciarCom = (p) => { personagemSelecionado = p; this.scene.start('Fase0'); };
@@ -260,29 +260,43 @@ class BaseFase extends Phaser.Scene {
     }
   }
 
-  update(){
-    // Input
+    update(){
+    // Input do jogador
     const left  = this.cursors.left.isDown  || this.keys.left.isDown  || mobile.left;
     const right = this.cursors.right.isDown || this.keys.right.isDown || mobile.right;
     const jump  = (this.cursors.up.isDown || this.keys.up.isDown || this.keys.space.isDown || mobile.jump);
     const spriteKey = (personagemSelecionado==='gabriel')?'gabrielSprite':'thainaSprite';
 
-    if (left){  this.player.setVelocityX(-200); this.player.anims.play('left_'+spriteKey, true); }
-    else if (right){ this.player.setVelocityX(200); this.player.anims.play('right_'+spriteKey, true); }
-    else { this.player.setVelocityX(0); this.player.anims.play('turn_'+spriteKey); }
+    if (left){  
+      this.player.setVelocityX(-200); 
+      this.player.anims.play('left_'+spriteKey, true); 
+    }
+    else if (right){ 
+      this.player.setVelocityX(200); 
+      this.player.anims.play('right_'+spriteKey, true); 
+    }
+    else { 
+      this.player.setVelocityX(0); 
+      this.player.anims.play('turn_'+spriteKey); 
+    }
 
-    if (jump && this.player.body.blocked.down){ this.player.setVelocityY(-600); }
+    if (jump && this.player.body.blocked.down){ 
+      this.player.setVelocityY(-600); 
+    }
 
+    // Atualiza stomp sensor
     this.playerFoot.x = this.player.x;
     this.playerFoot.y = this.player.y + (this.player.displayHeight/2) + 10;
     this.playerFoot.body.updateFromGameObject();
 
+    // Inimigos
     this.inimigos.children.iterate(e=>{
       if (!e || !e.body) return;
       const curVx = e.body.velocity.x || -100;
       const dir = Math.sign(curVx) || -1;
       const v = Math.max(60, Math.abs(curVx));
 
+      // probe à frente
       const aheadX = e.x + dir * (e.displayWidth/2 + 6);
       const aheadY = e.y + e.displayHeight/2 + 2;
       e.edgeProbe.x = aheadX;
@@ -301,9 +315,16 @@ class BaseFase extends Phaser.Scene {
         if (e.patrol.xMin != null && e.x <= e.patrol.xMin) e.setVelocityX( Math.abs(v) );
         if (e.patrol.xMax != null && e.x >= e.patrol.xMax) e.setVelocityX(-Math.abs(v));
       }
+
+      // virar sprite
+      if (e.body.velocity.x < 0) {
+        e.setFlipX(false); // esquerda
+      } else if (e.body.velocity.x > 0) {
+        e.setFlipX(true);  // direita
+      }
     });
 
-    // Pular de fase (dev)
+    // Dev skip
     if (Phaser.Input.Keyboard.JustDown(this.keys.skip)){
       if (this.proximaFase) this.scene.start(this.proximaFase);
       else this.scene.start('Menu');
@@ -426,4 +447,3 @@ new Phaser.Game(config);
 </script>
 </body>
 </html>
-
