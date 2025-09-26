@@ -334,8 +334,8 @@ class BaseFase extends Phaser.Scene {
   coletarQuadro(){
     if (this.final){
       this.physics.pause();
-      this.add.rectangle(800,450,840,320,0xffffff,0.9).setStrokeStyle(4,0x000000);
-      this.add.text(800,450,"Parabéns, você finalizou!\nTe amo ❤️",{fontSize:'48px',fill:'#000',align:'center'}).setOrigin(0.5);
+      this.add.rectangle(800,450,950,320,0xffffff,0.9).setStrokeStyle(4,0x000000);
+      this.add.text(800,450,"Obrigado por esse 1 ano meu amor\nPrimeiro de muitos que virão\nEu te amo demais\nMeu cérebro\n❤️",{fontSize:'48px',fill:'#000',align:'center'}).setOrigin(0.5);
       this.time.delayedCall(15000,()=>this.scene.start('Menu'));
     } else {
       if (this.proximaFase) this.scene.start(this.proximaFase);
@@ -353,82 +353,78 @@ class BaseFase extends Phaser.Scene {
 
 class Fase0  extends BaseFase { constructor(){ super("Fase0","Fase1","Fase 0: Quando tudo começou ❤️",
   [{x:705,y:825,w:4}],
-  {x:800,y:650}, [], "fundo0","quadro0"); } }
+  {x:800,y:685}, [], "fundo0","quadro0"); } }
 
-class Fase1  extends BaseFase { constructor(){ super("Fase1","Fase2","Fase 1 ❤️",
-  [ {x:420,y:720,w:4},{x:820,y:600,w:3},{x:1200,y:500,w:2} ],
-  {x:1260,y:440}, [], "fundo1","quadro1"); } }
+class Fase1  extends BaseFase { constructor(){ super("Fase1","Fase2","Fase 1: Conhecendo as Famílias ❤️",
+  [ {x:420,y:720,w:4},{x:820,y:600,w:3},{x:1190,y:500,w:3} ],
+  {x:1260,y:325}, [], "fundo1","quadro1"); } }
 
-class Fase2  extends BaseFase { constructor(){ super("Fase2","Fase3","Fase 2 ❤️",
-  [ {x:320,y:720,w:3},{x:640,y:600,w:3},{x:960,y:480,w:3},{x:1280,y:380,w:2} ],
-  {x:1330,y:320}, [], "fundo2","quadro2"); } }
+class Fase2  extends BaseFase { constructor(){ super("Fase2","Fase3","Fase 2: Ano Novo e Natal ❤️",
+  [ {x:320,y:720,w:3},{x:640,y:600,w:3},{x:960,y:480,w:3},{x:1257,y:380,w:3} ],
+  {x:1330,y:205}, [], "fundo2","quadro2"); } }
 
-class Fase3  extends BaseFase { constructor(){ super("Fase3","Fase4","Fase 3 ❤️",
-  [ {x:300,y:720,w:3},{x:580,y:600,w:2},{x:820,y:520,w:2},{x:1080,y:420,w:2},{x:1320,y:520,w:2} ],
-  {x:1360,y:460}, [ {x:840,y:500, dir:-1, xMin:820, xMax:1080} ], "fundo3","quadro3"); } }
+class Fase3  extends BaseFase { constructor(){ super("Fase3","Fase4","Fase 3: Primeiros Aniversários ❤️",
+  [ {x:300,y:720,w:3},{x:580,y:600,w:3},{x:820,y:520,w:4},{x:1320,y:400,w:4} ],
+  {x:1427,y:225}, [ {x:840,y:440, dir:-1, xMin:820, xMax:1080} ], "fundo3","quadro3"); } }
 
-class Fase4  extends BaseFase { constructor(){ super("Fase4","Fase5","Fase 4 ❤️",
-  [ {x:500,y:740,w:3},{x:760,y:640,w:3},{x:980,y:520,w:2},{x:1240,y:420,w:2} ],
-  {x:1280,y:360}, [ {x:780,y:620, dir:-1, xMin:760, xMax:920} ], "fundo4","quadro4"); } }
+class Fase4  extends BaseFase { constructor(){ super("Fase4","Fase5","Fase 4: Flores Azuis ❤️",
+  [ {x:1000,y:740,w:3},{x:700,y:640,w:3},{x:550,y:500,w:2},{x:930,y:320,w:3} ],
+  {x:1000,y:145}, [ {x:700,y:560, dir:-1, xMin:400, xMax:920} ], "fundo4","quadro4"); } }
 
-class Fase5  extends BaseFase { constructor(){ super("Fase5","Fase6","Fase 5 ❤️",
-  [ {x:350,y:720,w:4},{x:780,y:560,w:3},{x:1120,y:420,w:2},{x:1360,y:520,w:2} ],
-  {x:1400,y:460}, [ {x:800,y:540, dir:-1, xMin:780, xMax:940} ], "fundo5","quadro5"); } }
+class Fase5  extends BaseFase { constructor(){ super("Fase5","Fase6","Fase 5: Primeiro Carnaval Juntos ❤️",
+  [ {x:350,y:720,w:4},{x:700,y:400,w:3},{x:300,y:500,w:2},{x:980,y:420,w:4},{x:1390,y:520,w:3} ],
+  {x:1460,y:380}, [ {x:1000,y:340, dir:-1, xMin:0, xMax:1600} ], "fundo5","quadro5"); } }
 
-class Fase6  extends BaseFase { constructor(){ super("Fase6","Fase7","Fase 6 ❤️",
-  [ {x:320,y:720,w:3},{x:640,y:600,w:3},{x:980,y:520,w:2},{x:1240,y:400,w:2},{x:1460,y:520,w:2} ],
-  {x:1500,y:460}, [ {x:660,y:580, dir:-1, xMin:640, xMax:800} ], "fundo6","quadro6"); } }
+class Fase6  extends BaseFase { constructor(){ super("Fase6","Fase7","Fase 6: Our Adventure Book ❤️",
+  [{x:200,y:750,w:2}, {x:320,y:670,w:3},{x:500,y:590,w:8},{x:980,y:510,w:5},{x:1300,y:430,w:2} ],
+  {x:1150,y:700}, [ {x:660,y:510, dir:-1, xMin:0, xMax:1600} ], "fundo6","quadro6"); } }
 
-class Fase7  extends BaseFase { constructor(){ super("Fase7","Fase8","Fase 7 ❤️",
-  [ {x:280,y:740,w:3},{x:560,y:640,w:3},{x:840,y:520,w:3},{x:1120,y:420,w:2},{x:1360,y:520,w:2} ],
-  {x:1400,y:460}, [ {x:860,y:500, dir:-1, xMin:840, xMax:1000} ], "fundo7","quadro7"); } }
+class Fase7  extends BaseFase { constructor(){ super("Fase7","Fase8","Fase 7: Tinhamos aula, mas nem por isso não comemoramos ❤️",
+  [ {x:1240,y:700,w:3},{x:860,y:640,w:5},{x:640,y:520,w:3},{x:420,y:420,w:2},{x:135,y:520,w:3} ],
+  {x:200,y:345}, [ {x:860,y:500, dir:-1, xMin:0, xMax:1600} ], "fundo7","quadro7"); } }
 
-class Fase8  extends BaseFase { constructor(){ super("Fase8","Fase9","Fase 8 ❤️",
-  [ {x:520,y:740,w:3},{x:820,y:620,w:3},{x:1120,y:520,w:2},{x:1360,y:420,w:2} ],
-  {x:1400,y:360}, [ {x:840,y:600, dir:-1, xMin:820, xMax:980} ], "fundo8","quadro8"); } }
+class Fase8  extends BaseFase { constructor(){ super("Fase8","Fase9","Fase 8: Um mês complicado para mim, mas estávamos juntos ❤️",
+  [ {x:560,y:680,w:3}, {x:480,y:440,w:3},{x:820,y:750,w:5},{x:1120,y:550,w:3},{x:732,y:375,w:3} ],
+  {x:800,y:200}, [ {x:840,y:440, dir:-1, xMin:0, xMax:1600} ], "fundo8","quadro8"); } }
 
-class Fase9  extends BaseFase { constructor(){ super("Fase9","Fase10","Fase 9 ❤️",
-  [ {x:320,y:720,w:3},{x:640,y:620,w:2},{x:900,y:520,w:2},{x:1160,y:420,w:2},{x:1380,y:320,w:2} ],
+class Fase9  extends BaseFase { constructor(){ super("Fase9","Fase10","Fase 9: Nossos primeiros aniversários juntos ❤️",
+  [ {x:320,y:720,w:3},{x:150,y:400,w:5},{x:700,y:520,w:5},{x:700,y:220,w:9},{x:1350,y:435,w:3} ],
   {x:1420,y:260},
   [
-    {x:660,y:600, dir:-1, xMin:640, xMax:768},
-    {x:920,y:500, dir:1,  xMin:900, xMax:1028}
+    {x:150,y:320, dir:-1, xMin:0, xMax:1600},
+    {x:700,y:140, dir:1,  xMin:0, xMax:1600}
   ],
   "fundo9","quadro9"); } }
 
-class Fase10 extends BaseFase { constructor(){ super("Fase10","Fase11","Fase 10 ❤️",
-  [ {x:420,y:740,w:4},{x:880,y:600,w:3},{x:1180,y:500,w:2},{x:1380,y:380,w:2} ],
-  {x:1420,y:320},
+class Fase10 extends BaseFase { constructor(){ super("Fase10","Fase11","Fase 10: Passando o dia em Pedreira ❤️",
+  [ {x:600,y:740,w:4},{x:960,y:600,w:5},{x:550,y:300,w:7},{x:1300,y:500,w:3},{x:83,y:410,w:3} ],
+  {x:150,y:270},
   [
-    {x:900,y:580, dir:-1, xMin:880, xMax:1040},
-    {x:1200,y:480,dir:1,  xMin:1180,xMax:1308}
+    {x:960,y:520, dir:-1, xMin:0, xMax:1600},
+    {x:560,y:220,dir:1,  xMin:0,xMax:1600}
   ],
   "fundo10","quadro10"); } }
 
-class Fase11 extends BaseFase { constructor(){ super("Fase11","Fase12","Fase 11 ❤️",
-  [ {x:300,y:720,w:3},{x:620,y:600,w:2},{x:900,y:520,w:2},{x:1160,y:440,w:2},{x:1400,y:360,w:2} ],
-  {x:1440,y:300},
+class Fase11 extends BaseFase { constructor(){ super("Fase11","Fase12","Fase 11: Assistindo filme de anime juntos ❤️",
+  [ {x:300,y:720,w:3},{x:0,y:500,w:5},{x:600,y:320,w:5},{x:1064,y:200,w:5},{x:1320,y:500,w:1},{x:1320,y:564,w:1},{x:1320,y:628,w:1},{x:1320,y:692,w:1},{x:1320,y:756,w:1},{x:1320,y:820,w:1}],
+  {x:1480,y:700},
   [
-    {x:640,y:580, dir:-1, xMin:620, xMax:748},
-    {x:920,y:500, dir:1,  xMin:900, xMax:1028}
+    {x:100,y:420, dir:-1, xMin:0, xMax:1600},
+    {x:620,y:240, dir:1,  xMin:0, xMax:1600}
   ],
   "fundo11","quadro11"); } }
 
-class Fase12 extends BaseFase { constructor(){ super("Fase12","Fase13","Fase 12 ❤️",
-  [
-    {x:360,y:720,w:3},{x:660,y:600,w:3},{x:960,y:480,w:3}, 
-    {x:520,y:760,w:3},{x:820,y:640,w:3},{x:1120,y:520,w:2}  
-  ],
-  {x:1180,y:460},
-  [
-    {x:680,y:580, dir:-1, xMin:660, xMax:820},
-    {x:980,y:460, dir:1,  xMin:960, xMax:1088}
-  ],
-  "fundo12","quadro12"); } }
+class Fase12 extends BaseFase { 
+  constructor(){ 
+    super("Fase12", null, "Fase Final: O presente e o nosso futuro ❤️",
+      [], 
+      {x:800,y:700},
+      [],
+      "fundoFinal","quadroFinal", true
+    ); 
+  } 
+}
 
-class Fase13 extends BaseFase { constructor(){ super("Fase13", null, "Fase 13 ❤️",
-  [  ],
-  {x:800,y:700}, [], "fundoFinal","quadroFinal", true); } }
 
 const config = {
   type: Phaser.AUTO,
@@ -440,7 +436,7 @@ const config = {
   scene: [
     Menu, EscolhaPersonagem,
     Fase0, Fase1, Fase2, Fase3, Fase4, Fase5, Fase6, Fase7, Fase8,
-    Fase9, Fase10, Fase11, Fase12, Fase13
+    Fase9, Fase10, Fase11, Fase12
   ]
 };
 new Phaser.Game(config);
